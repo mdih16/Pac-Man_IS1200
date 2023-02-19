@@ -82,7 +82,7 @@ void display_init()
         
     spi_send_recv(SSD1306_SETCOMPINS);
     spi_send_recv(0x20); // Enable COM Left/Right remap
-        
+
     spi_send_recv(SSD1306_DISPLAYON);
 }
 
@@ -102,7 +102,56 @@ void display_update()
         int column;
         for(column = 0; column < SSD1306_COLUMNS; column++)
         {
-            spi_send_recv(display_buffer[(page * SSD1306_COLUMNS) + column]);
+            spi_send_recv(display_buffer[(page * 128) + column]);
+        }
+    }
+}
+
+int leftRotate(uint8_t n, unsigned int d)
+{
+    /* In n>>d, first d bits are 0.
+    To put last 3 bits of at
+    first, do bitwise or of n>>d
+    with n <<(INT_BITS - d) */
+    return (n << d)|(n >> (8 - d));
+}
+
+void encode_framebuffer(uint8_t framebuffer[])
+{
+    int page;
+    for (page = 0; page < 4; page++)
+    {
+        int column;
+        for (column = 0; column < 16; column++)
+        {
+            int p;
+            int i;
+            for (i = 0; i < 8; i++)
+            {
+                uint8_t byte_vertical = 0;
+                if (i == 0)
+                    p = 128;
+                else if (i == 1)
+                    p = 64;
+                else if (i == 2)
+                    p = 32;
+                else if (i == 3)
+                    p = 16;
+                else if (i == 4)
+                    p = 8;
+                else if (i == 5)
+                    p = 4;
+                else if (i == 6)
+                    p = 2;
+                else if (i == 7)
+                    p = 1;
+                int j;
+                for (j = 0; j < 8; j++)
+                {
+                    byte_vertical |= leftRotate((framebuffer[j * 16 + column + page * 128] & p), (9 + i + j) % 8);
+                } 
+                display_buffer[column * 8 + page * 128 + i] = byte_vertical;
+            }
         }
     }
 }

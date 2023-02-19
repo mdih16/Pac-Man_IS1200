@@ -51,5 +51,6 @@ uint8_t display_buffer[DISPLAY_BUFFER_SIZE];
 void display_host_init();
 void display_init();
 void display_update();
+void encode_framebuffer();
 
 #endif
