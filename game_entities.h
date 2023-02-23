@@ -1,30 +1,64 @@
 #ifndef GAME_ENTITIES_H
 #define GAME_ENTITIES_H
 
+// Define tile dimensions
+#define TILE_HEIGHT 4
+#define TILE_WIDTH 4
 
-typedef enum direction
-{
-    RIGHT,
-    LEFT,
-    UP,
-    DOWN,
-} direction;
+// Define directions
+#define RIGHT 0
+#define LEFT 1
+#define UP 2
+#define DOWN 3
 
 // Define states for tiles
 #define EMPTY 0
-#define WALL 1
-#define PELLET 2
-#define PACMAN 3
-#define GHOST 4
+#define PELLET 1 
+#define POWER_PELLET 2 
+#define WALL_HORTIZONTAL 3
+#define WALL_VERTICAL 4
+#define WALL_TOP_RIGHT_CORNER 5
+#define WALL_TOP_LEFT_CORNER 6 
+#define WALL_BOTTOM_RIGHT_CORNER 7
+#define WALL_BOTTOM_LEFT_CORNER 8
 
-typedef struct entity
+// Define ghost names
+#define BLINKY 0
+#define PINKY 1
+#define INKY 2
+#define CLYDE 3
+
+// Pacman struct
+typedef struct pacman
 {
     uint8_t x, y;
+    uint8_t x_prev, y_prev;
     uint8_t hp;
+    uint8_t current_tile;
+    uint8_t direction;
+    uint8_t next_direction;
+    const uint8_t *appearance;
+    int score;
+} pacman;
+
+// Ghost struct
+typedef struct ghost
+{
+    uint8_t x, y;
+    uint8_t x_prev, y_prev;
+    uint8_t current_tile;
+    uint8_t target_tile;
     uint8_t direction;
     const uint8_t *appearance;
-} entity;
+    uint8_t name;
+} ghost;
 
-void move_entity (entity pacman, uint8_t direction);
+void update_pacman(pacman *pacman);
+void update_ghost(ghost *ghost, pacman *pacman);
+void ghost_collision(pacman *pacman, ghost *ghost);
+void update_tiles(pacman *pacman);
+void init_map();
+
+const uint8_t ghost_sprite[4];
 
 #endif

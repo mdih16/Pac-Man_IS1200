@@ -19,6 +19,12 @@ void BTN_init()
     TRISDSET = 0xE0;    
 }
 
+void LED_init()
+{
+    // Set LED1-7 as output
+    TRISECLR = 0xff;
+}
+
 uint8_t BTN_check()
 {
     return ((PORTD >> 0x4) & 0xE)| ((PORTF >> 1) & 0x1);
