@@ -56,9 +56,17 @@ typedef struct ghost
 void update_pacman(pacman *pacman);
 void update_ghost(ghost *ghost, pacman *pacman);
 void ghost_collision(pacman *pacman, ghost *ghost);
-void update_tiles(pacman *pacman);
+void update_tiles(uint8_t tile);
 void init_map();
+void update_map();
 
+const uint8_t pacman_round[4];
+const uint8_t pacman_full_open_right[4];
 const uint8_t ghost_sprite[4];
+const uint8_t pellet_tile[4];
+const uint8_t empty_tile[4];
+
+uint8_t map[512];
+int score;
 
 #endif

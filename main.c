@@ -7,8 +7,11 @@
 
 void user_isr(void);
 
-pacman pac = {56, 20, 56, 20, 3, 0, UP, UP, pacman_full_open, 0};
-ghost blinky = {4, 4, 56, 8, 0, 0, RIGHT, ghost_sprite, BLINKY};
+pacman pac = {56, 20, 56, 20, 3, 0, UP, UP, pacman_full_open_right, 0};
+ghost blinky = {4, 4, 56, 8, 0, 0, LEFT, ghost_sprite, BLINKY};
+ghost pinky = {16, 4, 56, 8, 0, 0, RIGHT, ghost_sprite, PINKY};
+ghost inky = {68, 4, 56, 8, 0, 0, RIGHT, ghost_sprite, INKY};
+ghost clyde = {72, 4, 56, 8, 0, 0, RIGHT, ghost_sprite, CLYDE};
 
 int main() {
 	display_host_init();
@@ -35,9 +38,13 @@ void user_isr(void)
 	IFS(0) &= 0xfffffeff;
 
 	update_pacman(&pac);
-	update_ghost(&blinky, &pac);
+	//update_ghost(&blinky, &pac);
+	//update_ghost(&pinky, &pac);
+	//update_ghost(&inky, &pac);
+	//update_ghost(&clyde, &pac);
 	//ghost_collision(&pac, &blinky);
-	//update_tiles(&pac);
+	//update_map();
+	update_tiles(pac.current_tile);
 	encode_framebuffer(map);
 	display_update();
 }
