@@ -3,6 +3,7 @@
 
 void TMR2_init()
 {
+    // The display and game state is updated a little less than 16 times per second
     T2CON = 0x8070; 
     TMR2 = 0x0;
     PR2 = 20000; 

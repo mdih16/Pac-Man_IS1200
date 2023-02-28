@@ -37,4 +37,27 @@ uint8_t floor_sqrt(int x)
     return i - 1;
 }
 
+void intToString(int num, char str[], int maxDigits) {
+    int i = 0;
+    int isNegative = 0;
+    if (num < 0) {
+        isNegative = 1;
+        num = -num;
+    }
+    while (num != 0 && i < maxDigits) {
+        str[i++] = num % 10 + '0';
+        num /= 10;
+    }
+    if (isNegative) {
+        str[i++] = '-';
+    }
+    str[i] = '\0';
+    int j;
+    char temp;
+    for (j = 0; j < i / 2; j++) {
+        temp = str[j];
+        str[j] = str[i - j - 1];
+        str[i - j - 1] = temp;
+    }
+}
 

@@ -47,10 +47,12 @@
 #define VBAT_EN (PORTFCLR = 0x20) 
 
 uint8_t display_buffer[DISPLAY_BUFFER_SIZE];
+uint8_t map[512];
 
 void display_host_init();
 void display_init();
 void display_update();
+void display_clear();
 void encode_framebuffer();
 
 #endif

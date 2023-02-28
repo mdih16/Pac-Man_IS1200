@@ -107,6 +107,16 @@ void display_update()
     }
 }
 
+void display_clear()
+{
+	int i;
+	for (i = 0; i < DISPLAY_BUFFER_SIZE; i++)
+	{
+		map[i] = 0x00;
+	}
+    display_update();
+}
+
 int leftRotate(uint8_t n, uint8_t d)
 {
     return (n << d)|(n >> (8 - d));

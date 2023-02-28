@@ -3,15 +3,11 @@
 #include "SSD1306.h"
 #include "graphics.h"
 #include "peripherals.h"
+#include "menu.h"
 #include "game_entities.h"
 
 void user_isr(void);
-
-pacman pac = {56, 20, 56, 20, 3, 0, UP, UP, pacman_full_open_right, 0};
-ghost blinky = {4, 4, 56, 8, 0, 0, LEFT, ghost_sprite, BLINKY};
-ghost pinky = {16, 4, 56, 8, 0, 0, RIGHT, ghost_sprite, PINKY};
-ghost inky = {68, 4, 56, 8, 0, 0, RIGHT, ghost_sprite, INKY};
-ghost clyde = {72, 4, 56, 8, 0, 0, RIGHT, ghost_sprite, CLYDE};
+int game_state = 0;
 
 int main() {
 	display_host_init();
@@ -19,7 +15,16 @@ int main() {
 	BTN_init();
 	LED_init();
 	TMR2_init();
-	init_map();
+
+	IEC(0) |= 0x80;
+	IPC(1) |= 0x1f000000; 
+
+	IEC(0) |= 0x800;
+	IPC(2) |= 0x1f000000; 
+
+	IEC(0) |= 0x8000;
+	IPC(3) |= 0x1f000000; 
+
 
 	int i;
 	for (i = 0; i < DISPLAY_BUFFER_SIZE; i++)
@@ -37,14 +42,25 @@ void user_isr(void)
 {
 	IFS(0) &= 0xfffffeff;
 
-	update_pacman(&pac);
-	//update_ghost(&blinky, &pac);
-	//update_ghost(&pinky, &pac);
-	//update_ghost(&inky, &pac);
-	//update_ghost(&clyde, &pac);
-	//ghost_collision(&pac, &blinky);
-	//update_map();
-	update_tiles(pac.current_tile);
+	if (game_state == 0)
+	{
+		main_menu();
+	}
+	else if (game_state == 1)
+	{
+		render_tiles();
+		update_pacman(&pac);
+		update_game();
+	}
+	else if (game_state == 2)
+	{
+		render_scoreboard();
+	}
+	else if (game_state == 3)
+	{
+		submit_score();
+	}
+
 	encode_framebuffer(map);
 	display_update();
 }

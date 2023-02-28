@@ -33,40 +33,39 @@ typedef struct pacman
 {
     uint8_t x, y;
     uint8_t x_prev, y_prev;
-    uint8_t hp;
+    int hp;
     uint8_t current_tile;
     uint8_t direction;
     uint8_t next_direction;
     const uint8_t *appearance;
-    int score;
 } pacman;
 
 // Ghost struct
 typedef struct ghost
 {
     uint8_t x, y;
-    uint8_t x_prev, y_prev;
     uint8_t current_tile;
     uint8_t target_tile;
     uint8_t direction;
     const uint8_t *appearance;
     uint8_t name;
+    unsigned int  prison;
 } ghost;
 
 void update_pacman(pacman *pacman);
 void update_ghost(ghost *ghost, pacman *pacman);
 void ghost_collision(pacman *pacman, ghost *ghost);
-void update_tiles(uint8_t tile);
-void init_map();
-void update_map();
+void reset_game();
+void update_game();
+void render_tiles();
+void reset_game();
 
-const uint8_t pacman_round[4];
-const uint8_t pacman_full_open_right[4];
-const uint8_t ghost_sprite[4];
-const uint8_t pellet_tile[4];
-const uint8_t empty_tile[4];
+pacman pac;
+ghost ghosts[4];
 
-uint8_t map[512];
 int score;
+uint8_t prison_time;
+uint8_t fright_time; 
+uint8_t scatter_time;
 
 #endif
