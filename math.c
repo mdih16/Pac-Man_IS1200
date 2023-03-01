@@ -1,5 +1,10 @@
 #include <stdint.h>
 
+/*
+    I was not able to include the stdio.h and math.h header files so I implementations of the math functions I needed on the internet.
+    Nothing in this file is written by me.
+*/
+
 // https://www.geeksforgeeks.org/write-a-c-program-to-calculate-powxn/
 int power(int x, int n)
 {

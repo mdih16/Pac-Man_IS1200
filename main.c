@@ -1,31 +1,25 @@
 #include <stdint.h>
 #include <pic32mx.h>
 #include "SSD1306.h"
-#include "graphics.h"
 #include "peripherals.h"
 #include "menu.h"
 #include "game_entities.h"
 
 void user_isr(void);
+
+// Variable to control what is shown on screen
 int game_state = 0;
 
 int main() {
+	// Initialize everything that is needed
 	display_host_init();
 	display_init();
 	BTN_init();
 	LED_init();
-	TMR2_init();
+	TMR2_init(); 
+	SW_init();
 
-	IEC(0) |= 0x80;
-	IPC(1) |= 0x1f000000; 
-
-	IEC(0) |= 0x800;
-	IPC(2) |= 0x1f000000; 
-
-	IEC(0) |= 0x8000;
-	IPC(3) |= 0x1f000000; 
-
-
+	// Clear display buffer just in case
 	int i;
 	for (i = 0; i < DISPLAY_BUFFER_SIZE; i++)
 	{
@@ -40,6 +34,7 @@ int main() {
 
 void user_isr(void)
 {
+	// Reset TMR2 flag
 	IFS(0) &= 0xfffffeff;
 
 	if (game_state == 0)
@@ -61,7 +56,7 @@ void user_isr(void)
 		submit_score();
 	}
 
-	encode_framebuffer(map);
+	encode_framebuffer(framebuffer);
 	display_update();
 }
 

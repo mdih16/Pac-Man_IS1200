@@ -6,11 +6,13 @@ Some functions are taken from https://github.com/is1200-example-projects/hello-d
 #include <pic32mx.h>
 #include "SSD1306.h"
 
+// Not by me
 void delay(int cyc) {
     int i;
     for(i = cyc; i > 0; i--);
 }
 
+// Not by me
 uint8_t spi_send_recv(uint8_t data) {
     while(!(SPI2STAT & 0x08));
     SPI2BUF = data;
@@ -18,6 +20,7 @@ uint8_t spi_send_recv(uint8_t data) {
     return SPI2BUF;
 }
 
+// Not by me
 void display_host_init()
 {
     /* Set up peripheral bus clock */
@@ -86,6 +89,7 @@ void display_init()
     spi_send_recv(SSD1306_DISPLAYON);
 }
 
+// Update the display with the contents in the display buffer
 void display_update()
 {
     int page;
@@ -107,12 +111,13 @@ void display_update()
     }
 }
 
+// Clear the framebuffer and update the display
 void display_clear()
 {
 	int i;
 	for (i = 0; i < DISPLAY_BUFFER_SIZE; i++)
 	{
-		map[i] = 0x00;
+		framebuffer[i] = 0x00;
 	}
     display_update();
 }
@@ -122,6 +127,33 @@ int leftRotate(uint8_t n, uint8_t d)
     return (n << d)|(n >> (8 - d));
 }
 
+
+// Take a sprite and write it to the framebuffer
+void render_object (int x, int y, int width, int height, const uint8_t *sprite)
+{
+	int h;
+	int shift = ((x % 8) + width) % 8;
+	for (h = 0; h < height; h++)
+	{
+		int x_tmp = x;
+		int w;
+		for (w = 0; w < width; w++)
+		{
+			uint8_t p;
+
+			if (width < 8)
+				p = power(2, (width - 1) - w);
+			else
+				p = power(2, (7 - w));
+
+
+			framebuffer[(y * 16 + h * 16) + ((x + w) / 8)] = framebuffer[(y * 16 + h * 16) + ((x + w) / 8)] & ~power(2, (7 - (x_tmp % 8))) | right_rotate((sprite[h + w / 8] & p), shift);
+			x_tmp++;
+		}
+	}
+}
+
+// Write frambuffer to the display buffer, in the framebuffer the bytes are horizontal, while the page addressable mode of the SSD1306 requiers the bytes to be vertical. So the function converts the framebuffer to work with the SSD1306.
 void encode_framebuffer(uint8_t framebuffer[])
 {
     int page;

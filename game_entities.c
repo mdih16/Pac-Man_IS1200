@@ -1,12 +1,12 @@
 #include <stdint.h>
 #include <pic32mx.h>
 #include "SSD1306.h"
-#include "graphics.h"
 #include "peripherals.h"
 #include "game_entities.h"
 
 extern int game_state;
 
+// Declaration of variables used to control the game
 int score = 0;
 uint8_t pellets_eaten = 0;
 uint8_t power_mode = 0;
@@ -43,14 +43,17 @@ const uint8_t wall_vertical_edge_up[4] = {0x0, 0x6, 0x6, 0x6};
 const uint8_t wall_vertical_edge_down[4] = {0x6, 0x6, 0x6, 0x0};
 const uint8_t *tile_sprite[23] = {empty_tile, pellet_tile, power_pellet_tile, wall_horizontal_tile, wall_vertical_tile, wall_top_right_corner_tile, wall_top_left_corner_tile, wall_bottom_right_corner_tile, wall_bottom_left_corner_tile, wall_fork_top_tile, wall_fork_bottom_tile, wall_fork_right_tile, wall_fork_left_tile, wall_prison_top_horizontal_tile, wall_prison_bottom_horizontal_tile, wall_prison_top_right_corner_tile, wall_prison_top_left_corner_tile, wall_prison_bottom_right_tile, wall_prison_bottom_left_tile, wall_horizontal_edge_right, wall_horizontal_edge_left, wall_vertical_edge_up, wall_vertical_edge_down};
 
+// Textures for pacman
 const uint8_t pacman_round[4] = {0x6, 0xF, 0xF, 0x6};
 const uint8_t pacman_full_open_right[4] = {0x6, 0xc, 0xc, 0x6};
 const uint8_t pacman_full_open_down[4] = {0x6, 0xf, 0x9, 0x0};
 const uint8_t pacman_full_open_up[4] = {0x0, 0x9, 0xf, 0x6};
 const uint8_t pacman_full_open_left[4] = {0x6, 0x3, 0x3, 0x6};
 
+// Texture for the ghosts, all four use the same
 const uint8_t ghost_sprite[4] = {0xf, 0x9, 0xf, 0x9};
 
+// Inititialization of pacman and the four ghosts
 pacman pac = {56, 20, 56, 20, 3, 0, UP, UP, pacman_full_open_right};
 ghost ghosts[4] = {
 	{4, 4, 0, 0, RIGHT, ghost_sprite, BLINKY, 0}, 
@@ -59,6 +62,7 @@ ghost ghosts[4] = {
 	{4, 4, 0, 0, LEFT, ghost_sprite, CLYDE, 0}
 };
 
+// The tiles written to the tiles[] array every time the game resets as the tiles[] array gets overwritten during the game
 uint8_t initital_tiles[256] = {
     6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 9, 3, 3, 3, 5, 6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5,
     4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 22, 1, 1, 1, 8, 7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 4,
@@ -81,6 +85,16 @@ uint8_t tiles[256] = {
     8, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 7, 8, 3, 3, 3, 10, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 7
     };
 
+// Function to restore tiles
+
+void restore_tiles()
+{
+    int tile;
+    for (tile = 0; tile < 256; tile++)
+        tiles[tile] = initital_tiles[tile];
+}
+
+// Function to render the tiles on the OLED display
 void render_tiles()
 {
     int tile;
@@ -92,6 +106,7 @@ void render_tiles()
     }
 }
 
+// When the ghosts are frightened this function generates a target tile for them, I was not able to use rand() and srand() but this works good enough during my testing
 uint8_t generate_tile()
 {
     unsigned int t;
@@ -99,6 +114,7 @@ uint8_t generate_tile()
     return (t ^ s) % 256;
 }
 
+// A function to calculate the distance from one tile to another
 uint8_t distance (uint8_t tile1, uint8_t tile2)
 {
     int x1 = tile1 % 32;
@@ -110,6 +126,7 @@ uint8_t distance (uint8_t tile1, uint8_t tile2)
     return floor_sqrt(power((x2 - x1), 2) + power((y2 - y1), 2));
 }
 
+// Function to reset the game
 void reset_game()
 {
     // Reset pacman to starting position
@@ -149,45 +166,48 @@ void reset_game()
     }
 
     prison_count = 3;
-    pellets_eaten = 0;
-
-    // Restore the maze
-    int tile;
-    for (tile = 0; tile < 256; tile++)
-        tiles[tile] = initital_tiles[tile];
 }
 
+// Everytime pacman eats all the food in the maze this function is called to progress to the next level and up the difficulty
 void completed_level() 
 {
     level++;
     if (level == 1) 
     {
+        pellets_eaten = 0;
         prison_time = 192;
         fright_time = 64;
         scatter_time = 40;
+        restore_tiles();
         reset_game();
     }
     else if (level == 2) 
     {
+        pellets_eaten = 0;
         prison_time = 160;
         fright_time = 48;
         scatter_time = 20;
+        restore_tiles();
         reset_game();
     }
     else if (level == 3) 
     {
+        pellets_eaten = 0;
         prison_time = 96;
         fright_time = 32;
         scatter_time = 0;
+        restore_tiles();
         reset_game();
     }
     else if (level == 4)
     {
         display_clear();
+        SW_init();
         game_state = 3;
     }
 }
 
+// Function to put ghosts in the prison
 void imprison(ghost *ghost)
 {
     if (prison_count == 0)
@@ -211,14 +231,14 @@ void imprison(ghost *ghost)
         ghost->y = 14;
     }
     ghost->appearance = ghost_sprite;
-    render_object(ghost->x, ghost->y, 4, 4, ghost->appearance);
     ghost->prison = prison_time;
     prison_count++;
 }
 
+// Function used to update pacman 
 void update_pacman(pacman *pacman)
 {
-    volatile uint8_t btns = BTN_check();
+    uint8_t btns = BTN_check();
     if (btns)
     {
         if (btns & 0x1)
@@ -277,6 +297,7 @@ void update_pacman(pacman *pacman)
     render_object(pacman->x, pacman->y, 4, 4, pacman->appearance);
 }
 
+// Function to detirmine if a tile is a wall, returns 1 if that is the case else 0
 int is_wall(int tile)
 {
     if (tiles[tile] >= 3)
@@ -285,6 +306,7 @@ int is_wall(int tile)
         return 0;
 }
 
+// Function for ghosts to detirmine their next move
 void navigate_ghost(ghost *ghost)
 {
     // Calculate distances from the tiles around the ghost to the target tile
@@ -344,6 +366,7 @@ void navigate_ghost(ghost *ghost)
     }
 }
 
+// Function to update ghost
 void update_ghost(ghost *ghost, pacman *pacman)
 {
     ghost->current_tile = (((ghost->y + 1) / 4) * 32) + (ghost->x + 2) / 4;
@@ -426,6 +449,9 @@ void update_ghost(ghost *ghost, pacman *pacman)
         navigate_ghost(ghost);
     }
 
+    if (!power_mode)
+        ghost->appearance = ghost_sprite;
+
     uint8_t x_prev = ghost->x;
     uint8_t y_prev = ghost->y;
 
@@ -442,6 +468,7 @@ void update_ghost(ghost *ghost, pacman *pacman)
     render_object(ghost->x, ghost->y, 4, 4, ghost->appearance);
 }
 
+// Check if there has been a collison between pacman and a ghost, either imprison the ghost or decrease the health of pacman depening on if power mode is active
 void ghost_collision(pacman *pacman, ghost *ghost)
 {
     if (pacman->current_tile == ghost->current_tile)
@@ -461,12 +488,14 @@ void ghost_collision(pacman *pacman, ghost *ghost)
             else
             {
                 game_state = 3;
+                SW_init();
                 display_clear();
             }
         }
     }
 }
 
+// The function updating the game every timer interrupt
 void update_game()
 {
     uint8_t tile = pac.current_tile;
@@ -490,10 +519,10 @@ void update_game()
 
     int ghost;
     for (ghost = 0; ghost < 4; ghost++)
-	{
 		update_ghost(&ghosts[ghost], &pac);
+
+    for (ghost = 0; ghost < 4; ghost++)
 		ghost_collision(&pac, &ghosts[ghost]);
-	} 
 
     uint8_t hp = pac.hp;
     if (hp == 3)

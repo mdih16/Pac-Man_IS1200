@@ -15,12 +15,6 @@
 #define EMPTY 0
 #define PELLET 1 
 #define POWER_PELLET 2 
-#define WALL_HORTIZONTAL 3
-#define WALL_VERTICAL 4
-#define WALL_TOP_RIGHT_CORNER 5
-#define WALL_TOP_LEFT_CORNER 6 
-#define WALL_BOTTOM_RIGHT_CORNER 7
-#define WALL_BOTTOM_LEFT_CORNER 8
 
 // Define ghost names
 #define BLINKY 0
@@ -53,17 +47,17 @@ typedef struct ghost
 } ghost;
 
 void update_pacman(pacman *pacman);
-void update_ghost(ghost *ghost, pacman *pacman);
-void ghost_collision(pacman *pacman, ghost *ghost);
 void reset_game();
 void update_game();
 void render_tiles();
+void restore_tiles();
 void reset_game();
 
 pacman pac;
 ghost ghosts[4];
 
 int score;
+uint8_t pellets_eaten;
 uint8_t prison_time;
 uint8_t fright_time; 
 uint8_t scatter_time;

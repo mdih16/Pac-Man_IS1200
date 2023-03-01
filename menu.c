@@ -8,24 +8,30 @@
 #define CHARACTER_WIDTH 8
 #define CHARACTER_HEIGHT 5
 
+// Scoreboard struct
 typedef struct scoreboard
 {
     int score;
     uint8_t name[3];
 } scoreboard;
 
+// Initialize a scoreboard
 scoreboard scores[3] = {
     {0, {}},
     {0, {}},
     {0, {}}
 };
 
+// Buffer for when choosing a name for highscores
 uint8_t buffer[3];
+
 extern int game_state;
 
+// Textures for the lines used when navigating menus
 uint8_t vertical_line[] = {0x1, 0x1, 0x1, 0x1, 0x1, 0x1};
 uint8_t erase_line[] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
 
+// Font, letters A-Z
 const uint8_t font[][5] = {
     {0x7e, 0xc3, 0xff, 0xc3, 0xc3},
     {0xfe, 0xc3, 0xfe, 0xc3, 0xfe},
@@ -55,6 +61,7 @@ const uint8_t font[][5] = {
     {0xff, 0x0c, 0x18, 0x60, 0xff},
 };
 
+// Numebers 0-9
 const uint8_t numbers[][5] = {
     {0x7e, 0xc3, 0xc3, 0xc3, 0x7e},
     {0xf8, 0x18, 0x18, 0x18, 0xff},
@@ -68,6 +75,7 @@ const uint8_t numbers[][5] = {
     {0xff, 0xc3, 0xff, 0x03, 0xff}
 };
 
+// The main menu
 void main_menu()
 {
     // Render the text in menu
@@ -84,27 +92,32 @@ void main_menu()
 
     static int pos = 0;
     int prev_pos = pos;
-    if (IFS(0) & 0x80)
+
+    if (IFS(0) & 0x80) // SW1 to go right in menu
     {
         IFS(0) &= 0xffffff7f;
         pos++;
     }
-    else if (IFS(0) & 0x800)
+    else if (IFS(0) & 0x800) // SW2 to go left in menu
+    if (IFS(0) & 0x80)
     {
         IFS(0) &= 0xfffff7ff;
         pos--;
     }
-    else if (IFS(0) & 0x8000)
+    else if (IFS(0) & 0x8000) // SW3 to select an option in the menu, either start game or display scoreboard
     {
         IFS(0) &= 0xffff7fff;
         if (pos == 0)
         {
             game_state = 1;
+            pellets_eaten = 0;
             prison_time = 240;
             fright_time = 80; 
             scatter_time = 64;
             pac.hp = 3;
             score = 0;
+            SW_disable();
+            restore_tiles();
             reset_game();
             return;
         }
@@ -125,14 +138,17 @@ void main_menu()
     render_object(((59 * pos) + 13), 13, 1, 8, vertical_line);
 }
 
+
 void render_scoreboard()
 {
+    // Display letters S-C-O-R-E
     render_object(42, 1, CHARACTER_WIDTH, CHARACTER_HEIGHT, font[18]);
     render_object(51, 1, CHARACTER_WIDTH, CHARACTER_HEIGHT, font[2]);
     render_object(60, 1, CHARACTER_WIDTH, CHARACTER_HEIGHT, font[14]);
     render_object(69, 1, CHARACTER_WIDTH, CHARACTER_HEIGHT, font[17]);
     render_object(78, 1, CHARACTER_WIDTH, CHARACTER_HEIGHT, font[4]);
 
+    // Print out the scores and names if the score is not 0
     int i;
     for (i = 0; i < 3; i++)
     {
@@ -162,6 +178,7 @@ void render_scoreboard()
         }
     }
 
+    // Go back to main menu if SW3 is pressed
     if (IFS(0) & 0x8000)
     {
         IFS(0) &= 0xffff7fff;
@@ -170,6 +187,7 @@ void render_scoreboard()
     }
 }
 
+// Insert the score in the scoreboard if it is larger than any score currently in it
 void insert_score(int score)
 {
     // Check if the new score is higher than any current score
@@ -210,6 +228,7 @@ void insert_score(int score)
     }
 }
 
+// Screen shown when pacman dies or game is completed
 void submit_score()
 {
     // Render lines
